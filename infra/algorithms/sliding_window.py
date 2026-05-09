@@ -57,6 +57,7 @@ class SlidingWindowStrategy(RateLimiterStrategy):
         """
         key = self._get_window_key(client_id)
 
+
         # Obtém o timestamp mais antigo na janela
         oldest = await self.redis.zrange(key, 0, 0, withscores=True)
 

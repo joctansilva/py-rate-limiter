@@ -17,7 +17,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next) -> Response:
         """
-        
+
         Intercepta a requisição antes de chegar na rota.
         """
 
@@ -26,6 +26,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Não aplica rate limit em rotas de health check
         if request.url.path in ["/health", "/docs", "/openapi.json"]:
             return await call_next(request)
+
 
         try:
             is_allowed = await self.strategy.is_allowed(client_id)
