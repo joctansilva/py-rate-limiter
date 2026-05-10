@@ -10,10 +10,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Middleware do FastAPI que intercepta todas as requisições.
     """
 
-    def __init__(self, app, strategy: RateLimiterStrategy):
+    def __init__(self, app):
         super().__init__(app)
-        # o middleware não sabe qual algoritmo está usando
-        self.strategy = strategy
 
     async def dispatch(self, request: Request, call_next) -> Response:
         """
@@ -27,12 +25,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in ["/health", "/docs", "/openapi.json"]:
             return await call_next(request)
 
+        strategy: RateLimiterStrategy = request.app.state.rate_limiter
 
         try:
-            is_allowed = await self.strategy.is_allowed(client_id)
+            is_allowed = await strategy.is_allowed(client_id)
 
             if not is_allowed:
-                retry_after = await self.strategy.get_retry_after(client_id)
+                retry_after = await strategy.get_retry_after(client_id)
 
                 return JSONResponse(
                     status_code=429,
@@ -45,7 +44,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                         # informar quando tentar de novo
                         "Retry-After": str(retry_after),
                         # limite configurado
-                        "X-RateLimit-Limit": str(self.strategy.__class__.__name__),
+                        "X-RateLimit-Limit": str(strategy.__class__.__name__),
                     },
                 )
 

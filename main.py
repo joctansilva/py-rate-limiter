@@ -29,10 +29,7 @@ app = FastAPI(
 
 # Adiciona o middleware, ele intercepta TODAS as requisições
 # O middleware é adicionado DEPOIS de criar o app e ANTES das rotas
-app.add_middleware(
-    RateLimitMiddleware,
-    strategy=app.state.rate_limiter if hasattr(app.state, 'rate_limiter') else None,
-)
+app.add_middleware(RateLimitMiddleware)
 
 # Rota de health check, não tem rate limit (configurado no middleware)
 @app.get("/health")
